@@ -11,7 +11,6 @@ pipeline {
         sh '''
           node -v
           npm -v
-          echo "hello world"
         '''
       }
     }
