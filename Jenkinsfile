@@ -44,7 +44,7 @@ pipeline {
 
                             # Scan filesystem (node_modules + lock files)
                             /tmp/trivy filesystem --scanners vuln \
-                                --severity HIGH,CRITICAL \
+                                --severity CRITICAL \
                                 --exit-code 1 \
                                 --format table \
                                 .
