@@ -23,16 +23,32 @@ pipeline {
                     }
                 }
                 
-                stage('OWASP Dependency Check') {
+                // stage('OWASP Dependency Check') {
+                //     steps {
+                //         dependencyCheck additionalArguments: '''
+                //             --purge
+                //             --scan './'
+                //             --out './'
+                //             --format 'ALL'
+                //             --prettyPrint
+                //         ''', odcInstallation: 'OWASP-DepCheck-10'
+                //         dependencyCheckPublisher failedTotalCritical: 1, pattern: 'dependency-check-report.xml', stopBuild: true
+                //     }
+                // }
+
+                stage('Trivy FS Scan') {
                     steps {
-                        dependencyCheck additionalArguments: '''
-                            --purge
-                            --scan './'
-                            --out './'
-                            --format 'ALL'
-                            --prettyPrint
-                        ''', odcInstallation: 'OWASP-DepCheck-10'
-                        dependencyCheckPublisher failedTotalCritical: 1, pattern: 'dependency-check-report.xml', stopBuild: true
+                        sh '''
+                            # Install Trivy (or use a pre-baked agent image)
+                            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /tmp
+
+                            # Scan filesystem (node_modules + lock files)
+                            /tmp/trivy filesystem --scanners vuln \
+                                --severity HIGH,CRITICAL \
+                                --exit-code 1 \
+                                --format table \
+                                .
+                        '''
                     }
                 }
             }
