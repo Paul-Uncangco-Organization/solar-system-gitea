@@ -17,8 +17,7 @@ pipeline {
                 stage('NPM Dependency Audit') {
                     steps {
                         sh '''
-                            npm audit --audit-level=critical
-                            echo $?
+                            sh(script: 'npm audit --audit-level=critical', returnStatus: true)
                         '''
                     }
                 }
@@ -39,9 +38,6 @@ pipeline {
                 stage('Trivy FS Scan') {
                     steps {
                         sh '''
-                            # Install Trivy (or use a pre-baked agent image)
-                            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /tmp
-
                             # Scan filesystem (node_modules + lock files)
                             /tmp/trivy filesystem --scanners vuln \
                                 --severity CRITICAL \
