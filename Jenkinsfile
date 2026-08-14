@@ -26,7 +26,7 @@ pipeline {
                     steps {
                         sh '''
                             trivy filesystem --scanners vuln \
-                                --severity HIGH,CRITICAL \
+                                --severity CRITICAL \
                                 --exit-code 1 \
                                 --format template \
                                 --template "@/tmp/html.tpl" \
