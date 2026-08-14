@@ -25,18 +25,33 @@ pipeline {
                 stage('Trivy FS Scan') {
                     steps {
                         sh '''
-                            # Scan filesystem (node_modules + lock files)
-                            /tmp/trivy filesystem --scanners vuln \
-                                --severity CRITICAL \
+                            trivy filesystem --scanners vuln \
+                                --severity HIGH,CRITICAL \
                                 --exit-code 1 \
-                                --format table \
+                                --format template \
+                                --template "@/tmp/html.tpl" \
+                                -o trivy-report.html \
                                 .
                         '''
+
                     }
                 }
             }
         }
     }
+    post {
+        always {
+            publishHTML(target: [
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: '.',
+                reportFiles: 'trivy-report.html',
+                reportName: 'Trivy Report'
+            ])
+        }
+    }
+
 //     post {
 //       always {
 //         cleanWs()
