@@ -51,7 +51,11 @@ pipeline {
                 )]) {
                     sh 'npm test'
                 }
-                junit allowEmptyResults: true, testResults: 'test-results.xml'
+            }
+            post { 
+                always {
+                    junit allowEmptyResults: true, testResults: 'test-results.xml'
+                }
             }
 
         }
