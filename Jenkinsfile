@@ -51,7 +51,7 @@ pipeline {
                 )]) {
                     sh 'npm test'
                 }
-                junit allowEmptyResults: true, testResults: 'test-results.xml'
+                junit allowEmptyResults: true, testResults: 'test-results.html'
             }
 
         }
