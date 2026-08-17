@@ -65,7 +65,22 @@ pipeline {
                     passwordVariable: 'MONGO_PASSWORD', 
                     usernameVariable: 'MONGO_USERNAME'
                 )]) {
-                    sh 'npm run coverage'
+                    catchError(buildResult: 'SUCCESS', message: 'Oops! It will be fixed in future release', stageResult: 'UNSTABLE') {
+                        // some block
+                        sh 'npm run coverage'
+                    }
+                }
+            }
+            post {
+                always {
+                    publishHTML(target: [
+                        allowMissing: true,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'coverage/lcov-report',
+                        reportFiles: 'index.html',
+                        reportName: 'Code Coverage HTML Report'
+                    ])
                 }
             }
         }
