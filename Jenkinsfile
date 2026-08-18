@@ -44,6 +44,7 @@ pipeline {
                     }
                 }
             }
+        }
         // stage('Unit Testing') {
         //     steps {
         //         withCredentials([usernamePassword(
@@ -72,7 +73,7 @@ pipeline {
             }
         }
     }
-    poset {
+    post {
         always {
             publishHTML(target: [
                 allowMissing: true,
