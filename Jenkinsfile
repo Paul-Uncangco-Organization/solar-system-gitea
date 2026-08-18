@@ -7,6 +7,9 @@ pipeline {
     
     environment {
         MONGO_URI = "mongodb+srv://supercluster.d83jj.mongodb.net/superData"
+        MONGO_DB_CREDS = credentials('mongo-db-credentials')
+        MONGO_DB_CREDS_USERNAME = credentials('mongo-db-user')
+        MONGO_DB_CREDS_PASSWORD = credentials('mongo-db-password')
     }
 
     stages {
@@ -41,7 +44,6 @@ pipeline {
                     }
                 }
             }
-        }
         // stage('Unit Testing') {
         //     steps {
         //         withCredentials([usernamePassword(
@@ -60,32 +62,17 @@ pipeline {
         // }
         stage('Code Coverage') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'mongo-db-credentials', 
-                    passwordVariable: 'MONGO_PASSWORD', 
-                    usernameVariable: 'MONGO_USERNAME'
-                )]) {
-                    catchError(buildResult: 'SUCCESS', message: 'Oops! It will be fixed in future release', stageResult: 'UNSTABLE') {
-                        // some block
-                        sh 'npm run coverage'
-                    }
-                }
-            }
-            post {
-                always {
-                    publishHTML(target: [
-                        allowMissing: true,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'coverage/lcov-report',
-                        reportFiles: 'index.html',
-                        reportName: 'Code Coverage HTML Report'
-                    ])
+                sh 'echo Colon-Separated - $MONGO_DB_CREDS'
+                sh 'echo Username - $MONGO_DB_CREDS_USERNAME'
+                sh 'echo Password - $MONGO_DB_CREDS_PASSWORD'
+
+                catchError(buildResult: 'SUCCESS', message: 'Oops! It will be fixed in future release', stageResult: 'UNSTABLE') {
+                    sh 'npm run coverage'
                 }
             }
         }
     }
-    post {
+    poset {
         always {
             publishHTML(target: [
                 allowMissing: true,
@@ -95,6 +82,15 @@ pipeline {
                 reportFiles: 'trivy-report.html',
                 reportName: 'Trivy Report'
             ])
+            publishHTML(target: [
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'coverage/lcov-report',
+                reportFiles: 'index.html',
+                reportName: 'Code Coverage HTML Report'
+            ])
+
         }
     }
 }
