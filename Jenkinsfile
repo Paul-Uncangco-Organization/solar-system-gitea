@@ -77,8 +77,9 @@ pipeline {
             steps {
                 sh 'echo $SONAR_SCANNER_HOME'
                 sh '''
-                    SONAR_SCANNER_HOME/bin/sonar-scanner \
+                   $SONAR_SCANNER_HOME/bin/sonar-scanner \
                     -Dsonar.host.url=http://192.168.68.63:9000 \
+                    -Dsonar.source=app.js \
                     -Dsonar.token=sqp_3eba4636a31d62d4d838627acaac3461fb88f5e0 \
                     -Dsonar.projectKey=solar-system-gitea
                 '''
