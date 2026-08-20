@@ -10,6 +10,7 @@ pipeline {
         MONGO_DB_CREDS = credentials('mongo-db-credentials')
         MONGO_DB_CREDS_USERNAME = credentials('mongo-db-user')
         MONGO_DB_CREDS_PASSWORD = credentials('mongo-db-password')
+        SONAR_SCANNER_HOME = tool 'sonarqube-scanner-810';
     }
 
     stages {
@@ -71,6 +72,31 @@ pipeline {
                     sh 'npm run coverage'
                 }
             }
+        }
+        stage('SonarQube Scanning') {
+            steps {
+                sh 'echo $SONAR_SCANNER_HOME'
+                sh '''
+                    SONAR_SCANNER_HOME/bin/sonar-scanner \
+                    -Dsonar.host.url=http://192.168.68.63:9000 \
+                    -Dsonar.token=sqp_3eba4636a31d62d4d838627acaac3461fb88f5e0 \
+                    -Dsonar.projectKey=solar-system-gitea
+                '''
+            }
+
+            // stage('SAST - SonarQube') {
+            //     steps {
+            //         sh 'echo $SONAR_SCANNER_HOME'
+            //         sh '''
+            //             $SONAR_SCANNER_HOME/bin/sonar-scanner \
+            //             -Dsonar.projectKey=Solar-System-Project \
+            //             -Dsonar.sources=app.js \
+            //             -Dsonar.host.url=http://<sonarqube-host>:9000 \
+            //             -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info \
+            //             -Dsonar.login=<token>
+            //         '''
+            //     }
+            // }
         }
     }
     post {
