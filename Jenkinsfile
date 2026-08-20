@@ -75,29 +75,19 @@ pipeline {
         }
         stage('SonarQube Scanning') {
             steps {
-                sh 'echo $SONAR_SCANNER_HOME'
-                sh '''
-                   $SONAR_SCANNER_HOME/bin/sonar-scanner \
-                    -Dsonar.host.url=http://192.168.68.63:9000 \
-                    -Dsonar.source=app.js \
-                    -Dsonar.token=sqp_3eba4636a31d62d4d838627acaac3461fb88f5e0 \
-                    -Dsonar.projectKey=solar-system-gitea
-                '''
+                timeout(time: 60, unit 'SECONDS') {
+                    withSonarQubeEnv('sonar-qube-server') {
+                        sh 'echo $SONAR_SCANNER_HOME'
+                        sh '''
+                        $SONAR_SCANNER_HOME/bin/sonar-scanner \
+                            -Dsonar.host.url=http://192.168.68.63:9000 \
+                            -Dsonar.source=app.js \
+                            -Dsonar.projectKey=solar-system-gitea
+                        '''
+                    }
+                    waitForQualityGate abortPipeline: true
+                }
             }
-
-            // stage('SAST - SonarQube') {
-            //     steps {
-            //         sh 'echo $SONAR_SCANNER_HOME'
-            //         sh '''
-            //             $SONAR_SCANNER_HOME/bin/sonar-scanner \
-            //             -Dsonar.projectKey=Solar-System-Project \
-            //             -Dsonar.sources=app.js \
-            //             -Dsonar.host.url=http://<sonarqube-host>:9000 \
-            //             -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info \
-            //             -Dsonar.login=<token>
-            //         '''
-            //     }
-            // }
         }
     }
     post {
