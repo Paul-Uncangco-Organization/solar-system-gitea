@@ -89,6 +89,12 @@ pipeline {
                 }
             }
         }
+        stage('Build Docker Image') {
+            steps {
+                sh 'printenv'
+                sh 'docker build -t islandertron1016/solar-system:$GIT_COMMIT'
+            }
+        }
     }
     post {
         always {
