@@ -98,16 +98,16 @@ pipeline {
         stage('Trivy Vulnerability Scanner') {
             steps {
                 sh '''
-                    trivy image islandertron1016/solar-system:${GIT_COMMIT} \ 
+                    trivy image islandertron1016/solar-system:${GIT_COMMIT} \
                         --severity LOW,MEDIUM \
                         --exit-code 0 \
-                        --quiet \ 
+                        --quiet \
                         --format json -o trivy-image-MEDIUM-results.json
 
-                    trivy image islandertron1016/solar-system:${GIT_COMMIT} \ 
+                    trivy image islandertron1016/solar-system:${GIT_COMMIT} \
                         --severity HIGH,CRITICAL \
                         --exit-code 1 \
-                        --quiet \ 
+                        --quiet \
                         --format json -o trivy-image-CRITICAL-results.json
                 '''
             }
@@ -161,21 +161,21 @@ pipeline {
                 allowMissing: true, 
                 alwaysLinkToLastBuild: true, 
                 keepAll: true, 
-                reportDir: "/", 
+                reportDir: ".", 
                 reportfiles:'trivy-image-CRITICAL-results.html', 
                 reportName: "Trivy Image Critical Vul Report", 
                 reportTitles: "", 
-                usewrapperFileDirectly: true
+                useWrapperFileDirectly: true
             ])
             publishHTML(target: [
                 allowMissing: true,
                 alwaysLinkToLastBuild: true, 
                 keepAll: true, 
-                reportdir: './',
+                reportdir: '.',
                 reportfites: 'trivy-image-MEDIUM-results.html', 
                 reportName:'Trivy Image Medium Vul Report',
                 reportTitles: "", 
-                usewrapperFileDirectly: true
+                useWrapperFileDirectly: true
             ])
         }
     }
