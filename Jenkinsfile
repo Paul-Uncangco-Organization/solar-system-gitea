@@ -99,16 +99,16 @@ pipeline {
             steps {
                 sh '''
                     trivy image islandertron1016/solar-system:${GIT_COMMIT} \ 
-                    --severity LOW,MEDIUM \
-                    --exit-code 0 \
-                    --quiet \ 
-                    --format json -o trivy-image-MEDIUM-results.json
+                        --severity LOW,MEDIUM \
+                        --exit-code 0 \
+                        --quiet \ 
+                        --format json -o trivy-image-MEDIUM-results.json
 
                     trivy image islandertron1016/solar-system:${GIT_COMMIT} \ 
-                    --severity HIGH,CRITICAL \
-                    --exit-code 1 \
-                    --quiet \ 
-                    --format json -o trivy-image-CRITICAL-results.json
+                        --severity HIGH,CRITICAL \
+                        --exit-code 1 \
+                        --quiet \ 
+                        --format json -o trivy-image-CRITICAL-results.json
                 '''
             }
             post {
