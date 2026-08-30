@@ -95,9 +95,52 @@ pipeline {
                 sh 'docker build -t islandertron1016/solar-system:${GIT_COMMIT} .'
             }
         }
+        stage('Trivy Vulnerability Scanner') {
+            steps {
+                sh '''
+                    trivy image islandertron1016/solar-system:${GIT_COMMIT} \ 
+                    --severity LOW,MEDIUM \
+                    --exit-code 0 \
+                    --quiet \ 
+                    --format json -o trivy-image-MEDIUM-results.json
+
+                    trivy image islandertron1016/solar-system:${GIT_COMMIT} \ 
+                    --severity HIGH,CRITICAL \
+                    --exit-code 1 \
+                    --quiet \ 
+                    --format json -o trivy-image-CRITICAL-results.json
+                '''
+            }
+            post {
+                always {
+                    sh '''
+                        trivy convert \
+                            --format template --template "@/usr/local/share/trivy/templates/html.tpl" \
+                            --output trivy-image-MEDIUM-results.html trivy-image-MEDIUM-results.json
+
+                        trivy convert \
+                            --format template --template "@/usr/local/share/trivy/templates/html.tpl" \
+                            --output trivy-image-CRITICAL-results.html trivy-image-CRITICAL-results.json
+
+                        trivy convert \
+                            --format template --template "@/usr/local/share/trivy/templates/junit.tpl" \
+                            --output trivy-image-MEDIUM-results.xml   trivy-image-MEDIUM-results.json
+
+                        trivy convert \
+                            --format template --template "@/usr/local/share/trivy/templates/junit.tpl" \
+                            --output trivy-image-CRITICAL-results.xml trivy-image-CRITICAL-results.json
+
+                    '''
+                }
+            }
+            
+        }
     }
     post {
         always {
+            junit allowEmptyResults: true, stdioRetention: '', testResults: 'trivy-image-MEDIUM-results.xml'
+            junit allowEmptyResults: true, stdioRetention: '', testResults: 'trivy-image-CRITICAL-results.xml'
+
             publishHTML(target: [
                 allowMissing: true,
                 alwaysLinkToLastBuild: true,
@@ -114,7 +157,26 @@ pipeline {
                 reportFiles: 'index.html',
                 reportName: 'Code Coverage HTML Report'
             ])
-
+            publishHTML(target: [
+                allowMissing: true, 
+                alwaysLinkToLastBuild: true, 
+                keepAll: true, 
+                reportDir: "/", 
+                reportfiles:'trivy-image-CRITICAL-results.html', 
+                reportName: "Trivy Image Critical Vul Report", 
+                reportTitles: "", 
+                usewrapperFileDirectly: true
+            ])
+            publishHTML(target: [
+                allowMissing: true,
+                alwaysLinkToLastBuild: true, 
+                keepAll: true, 
+                reportdir: './',
+                reportfites: 'trivy-image-MEDIUM-results.html', 
+                reportName:'Trivy Image Medium Vul Report',
+                reportTitles: "", 
+                usewrapperFileDirectly: true
+            ])
         }
     }
 }
