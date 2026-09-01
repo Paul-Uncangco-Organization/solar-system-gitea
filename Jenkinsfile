@@ -162,7 +162,7 @@ pipeline {
                 alwaysLinkToLastBuild: true, 
                 keepAll: true, 
                 reportDir: ".", 
-                reportfiles:'trivy-image-CRITICAL-results.html', 
+                reportFiles:'trivy-image-CRITICAL-results.html', 
                 reportName: "Trivy Image Critical Vul Report", 
                 reportTitles: "", 
                 useWrapperFileDirectly: true
@@ -171,8 +171,8 @@ pipeline {
                 allowMissing: true,
                 alwaysLinkToLastBuild: true, 
                 keepAll: true, 
-                reportdir: '.',
-                reportfites: 'trivy-image-MEDIUM-results.html', 
+                reportDir: '.',
+                reportFiles: 'trivy-image-MEDIUM-results.html', 
                 reportName:'Trivy Image Medium Vul Report',
                 reportTitles: "", 
                 useWrapperFileDirectly: true
