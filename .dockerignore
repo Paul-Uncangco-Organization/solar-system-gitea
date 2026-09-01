@@ -26,3 +26,4 @@ zap*
 dependency*
 jenkins*
 trivy-image*
+trivy-*
