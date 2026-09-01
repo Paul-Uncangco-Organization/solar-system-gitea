@@ -113,7 +113,7 @@ pipeline {
                 --format json -o trivy-image-CRITICAL-results.json
           '''
         }
-      }
+      } 
       post {
         always {
           sh '''
