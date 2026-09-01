@@ -72,7 +72,7 @@ pipeline {
                     sh 'npm run coverage'
                 }
             }
-        }
+        } 
         stage('SonarQube Scanning') {
             steps {
                 timeout(time: 60, unit: 'SECONDS') {
