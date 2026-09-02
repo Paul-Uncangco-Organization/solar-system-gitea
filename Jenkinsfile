@@ -136,6 +136,13 @@ pipeline {
         }
       }
     }
+    stage('Push Docker Image') {
+      steps {
+        withDockerRegistry(credentialsId: 'docker-hub-credentials', url: "") {
+          sh 'docker build -t islandertron1016/solar-system:${GIT_COMMIT} .'
+        }
+      }
+    }
   }
   post {
     always {
