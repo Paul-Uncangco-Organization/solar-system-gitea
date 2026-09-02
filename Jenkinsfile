@@ -162,11 +162,9 @@ pipeline {
           allowMissing: true,
           alwaysLinkToLastBuild: true,
           keepAll: true,
-          reportDir: ".",
+          reportDir: '.',
           reportFiles: 'trivy-image-CRITICAL-results.html',
-          reportName: "Trivy Image Critical Vul Report",
-          reportTitles: "",
-          useWrapperFileDirectly: true
+          reportName: 'Trivy Image Critical Vul Report'
       ])
       publishHTML(target: [
           allowMissing: true,
@@ -174,9 +172,7 @@ pipeline {
           keepAll: true,
           reportDir: '.',
           reportFiles: 'trivy-image-MEDIUM-results.html',
-          reportName: 'Trivy Image Medium Vul Report',
-          reportTitles: "",
-          useWrapperFileDirectly: true
+          reportName: 'Trivy Image Medium Vul Report'
       ])
     }
   }
