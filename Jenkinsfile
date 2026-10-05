@@ -79,7 +79,7 @@ pipeline {
             sh 'echo $SONAR_SCANNER_HOME'
             sh '''
               $SONAR_SCANNER_HOME/bin/sonar-scanner \
-                  -Dsonar.host.url=http://192.168.68.58:9000 \
+                  -Dsonar.host.url=http://192.168.68.59:9000 \
                   -Dsonar.source=app.js \
                   -Dsonar.projectKey=solar-system-gitea \
                   -Dsonar.exclusions=**/trivy-report*.html,**/trivy-report*.json,**/*trivy*
