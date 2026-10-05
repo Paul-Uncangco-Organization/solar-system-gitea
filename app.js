@@ -13,18 +13,28 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '/')));
 app.use(cors())
 
-mongoose.connect(process.env.MONGO_URI, {
-    user: process.env.MONGO_USERNAME,
-    pass: process.env.MONGO_PASSWORD,
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}, function(err) {
-    if (err) {
-        console.log("error!! " + err)
-    } else {
-      //  console.log("MongoDB Connection Successful")
+async function connectDB() {
+    try { 
+        await mongoose.connect('mongodb://localhost:27017/mydb');
+        console.log('Connected to MongoDB');
+    } catch (err) {
+        console.error('Connection failed', err);
+        process.exit(1);
     }
-})
+}
+connectDB();
+// mongoose.connect(process.env.MONGO_URI, {
+//     user: process.env.MONGO_USERNAME,
+//     pass: process.env.MONGO_PASSWORD,
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true
+// }, function(err) {
+//     if (err) {
+//         console.log("error!! " + err)
+//     } else {
+//       //  console.log("MongoDB Connection Successful")
+//     }
+// })
 
 var Schema = mongoose.Schema;
 
