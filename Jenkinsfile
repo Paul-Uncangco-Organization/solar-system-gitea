@@ -143,7 +143,31 @@ pipeline {
         }
       }
     }
-  }
+    
+    stage('Deploy - AWS EC2') {
+      steps {
+        script {
+          sshagent(['my-key']) {
+            sh '''
+              ssh -o StrictHostKeyChecking=no -p 2200 root@127.0.0.1 << 'EOF'
+                if docker ps -a | grep -q "solar-system"; then
+                  echo "Container found. Stopping..."
+                  docker stop solar-system && docker rm solar-system
+                  echo "Container stopped and removed"
+                fi
+                  docker run \
+                    --name solar-system \
+                    -p 3000:3000 \
+                    -e MONGO_URI="mongodb+srv://supercluster.d83jj.mongodb.net/superData" \
+                    -e MONGO_USERNAME="superuser” \
+                    -e MONGO_PASSWORD="SuperPassword” \
+                    islandertron1016/solar-system:${GIT-COMMIT}
+              EOF
+            '''
+          }
+        }
+      }
+    }
   post {
     always {
       junit allowEmptyResults: true, stdioRetention: '', testResults: 'trivy-image-MEDIUM-results.xml'
