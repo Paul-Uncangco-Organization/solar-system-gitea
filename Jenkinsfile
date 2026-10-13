@@ -168,6 +168,7 @@ pipeline {
         }
       }
     }
+  }
   post {
     always {
       junit allowEmptyResults: true, stdioRetention: '', testResults: 'trivy-image-MEDIUM-results.xml'
