@@ -162,7 +162,7 @@ pipeline {
                     -e MONGO_URI="mongodb+srv://supercluster.d83jj.mongodb.net/superData" \
                     -e MONGO_USERNAME="superuser” \
                     -e MONGO_PASSWORD="SuperPassword” \
-                    islandertron1016/solar-system:${GIT-COMMIT}
+                    islandertron1016/solar-system:$GIT_COMMIT
               EOF
             '''
           }
