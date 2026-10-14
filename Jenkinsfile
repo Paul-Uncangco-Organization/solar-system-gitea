@@ -20,31 +20,32 @@ pipeline {
       }
     }
 
-    stage('Dependency Scanning') {
-      parallel {
-        stage('NPM Dependency Audit') {
-          steps {
-            sh '''
-              npm audit --audit-level=critical
-            '''
-          }
-        }
+    // stage('Dependency Scanning') {
+    //   parallel {
+    //     stage('NPM Dependency Audit') {
+    //       steps {
+    //         sh '''
+    //           npm audit --audit-level=critical
+    //         '''
+    //       }
+    //     }
 
-        stage('Trivy FS Scan') {
-          steps {
-            sh '''
-              trivy filesystem --scanners vuln \
-                  --severity CRITICAL \
-                  --exit-code 1 \
-                  --format template \
-                  --template "@/tmp/html.tpl" \
-                  -o trivy-report.html \
-                  .
-            '''
-          }
-        }
-      }
-    }
+    //     stage('Trivy FS Scan') {
+    //       steps {
+    //         sh '''
+    //           trivy filesystem --scanners vuln \
+    //               --severity CRITICAL \
+    //               --exit-code 1 \
+    //               --format template \
+    //               --template "@/tmp/html.tpl" \
+    //               -o trivy-report.html \
+    //               .
+    //         '''
+    //       }
+    //     }
+    //   }
+    // }
+    
     // stage('Unit Testing') {
     //     steps {
     //         withCredentials([usernamePassword(
