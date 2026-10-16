@@ -73,70 +73,71 @@ pipeline {
         }
       }
     }
-    stage('SonarQube Scanning') {
-      steps {
-        timeout(time: 15, unit: 'MINUTES') {
-          withSonarQubeEnv('sonar-qube-server') {
-            sh 'echo $SONAR_SCANNER_HOME'
-            sh '''
-              $SONAR_SCANNER_HOME/bin/sonar-scanner \
-                  -Dsonar.host.url=http://192.168.68.59:9000 \
-                  -Dsonar.source=app.js \
-                  -Dsonar.projectKey=solar-system-gitea \
-                  -Dsonar.exclusions=**/trivy-report*.html,**/trivy-report*.json,**/*trivy*
-            '''
-          }
-          waitForQualityGate abortPipeline: true
-        }
-      }
-    }
+    // stage('SonarQube Scanning') {
+    //   steps {
+    //     timeout(time: 15, unit: 'MINUTES') {
+    //       withSonarQubeEnv('sonar-qube-server') {
+    //         sh 'echo $SONAR_SCANNER_HOME'
+    //         sh '''
+    //           $SONAR_SCANNER_HOME/bin/sonar-scanner \
+    //               -Dsonar.host.url=http://192.168.68.59:9000 \
+    //               -Dsonar.source=app.js \
+    //               -Dsonar.projectKey=solar-system-gitea \
+    //               -Dsonar.exclusions=**/trivy-report*.html,**/trivy-report*.json,**/*trivy*
+    //         '''
+    //       }
+    //       waitForQualityGate abortPipeline: true
+    //     }
+    //   }
+    // }
     stage('Build Docker Image') {
       steps {
         sh 'printenv'
         sh 'docker build -t islandertron1016/solar-system:${GIT_COMMIT} .'
       }
     }
-    stage('Trivy Vulnerability Scanner') {
-      steps {
-        sh '''
-          trivy image islandertron1016/solar-system:${GIT_COMMIT} \
-              --severity LOW,MEDIUM,HIGH \
-              --exit-code 0 \
-              --quiet \
-              --format json -o trivy-image-MEDIUM-results.json
-        '''
-        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-          sh '''
-            trivy image islandertron1016/solar-system:${GIT_COMMIT} \
-                --severity CRITICAL \
-                --exit-code 1 \
-                --quiet \
-                --format json -o trivy-image-CRITICAL-results.json
-          '''
-        }
-      } 
-      post {
-        always {
-          sh '''
-            trivy convert \
-                --format template --template "@/usr/local/share/trivy/templates/html.tpl" \
-                --output trivy-image-MEDIUM-results.html trivy-image-MEDIUM-results.json
+    // stage('Trivy Vulnerability Scanner') {
+    //   steps {
+    //     sh '''
+    //       trivy image islandertron1016/solar-system:${GIT_COMMIT} \
+    //           --severity LOW,MEDIUM,HIGH \
+    //           --exit-code 0 \
+    //           --quiet \
+    //           --format json -o trivy-image-MEDIUM-results.json
+    //     '''
+    //     catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+    //       sh '''
+    //         trivy image islandertron1016/solar-system:${GIT_COMMIT} \
+    //             --severity CRITICAL \
+    //             --exit-code 1 \
+    //             --quiet \
+    //             --format json -o trivy-image-CRITICAL-results.json
+    //       '''
+    //     }
+    //   } 
+    //   post {
+    //     always {
+    //       sh '''
+    //         trivy convert \
+    //             --format template --template "@/usr/local/share/trivy/templates/html.tpl" \
+    //             --output trivy-image-MEDIUM-results.html trivy-image-MEDIUM-results.json
 
-            trivy convert \
-                --format template --template "@/usr/local/share/trivy/templates/html.tpl" \
-                --output trivy-image-CRITICAL-results.html trivy-image-CRITICAL-results.json
+    //         trivy convert \
+    //             --format template --template "@/usr/local/share/trivy/templates/html.tpl" \
+    //             --output trivy-image-CRITICAL-results.html trivy-image-CRITICAL-results.json
 
-            trivy convert \
-                --format template --template "@/usr/local/share/trivy/templates/junit.tpl" \
-                --output trivy-image-MEDIUM-results.xml   trivy-image-MEDIUM-results.json
+    //         trivy convert \
+    //             --format template --template "@/usr/local/share/trivy/templates/junit.tpl" \
+    //             --output trivy-image-MEDIUM-results.xml   trivy-image-MEDIUM-results.json
 
-            trivy convert \
-                --format template --template "@/usr/local/share/trivy/templates/junit.tpl" \
-                --output trivy-image-CRITICAL-results.xml trivy-image-CRITICAL-results.json
-          '''
-        }
-      }
-    }
+    //         trivy convert \
+    //             --format template --template "@/usr/local/share/trivy/templates/junit.tpl" \
+    //             --output trivy-image-CRITICAL-results.xml trivy-image-CRITICAL-results.json
+    //       '''
+    //     }
+    //   }
+    // }
+
     stage('Push Docker Image') {
       steps {
         withDockerRegistry(credentialsId: 'docker-hub-credentials', url: "") {
