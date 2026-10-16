@@ -1,108 +1,96 @@
-const path = require('path');
-const fs = require('fs')
-const express = require('express');
-const OS = require('os');
-const bodyParser = require('body-parser');
-const mongoose = require("mongoose");
+// app.js
+import 'dotenv/config';                 // 1. Load .env FIRST
+import path from 'node:path';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import { fileURLToPath } from 'node:url';
+
+import express from 'express';
+import cors from 'cors';
+import mongoose from 'mongoose';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = path.dirname(__filename);
+
 const app = express();
-const cors = require('cors')
-const serverless = require('serverless-http')
+const PORT = process.env.PORT || 3000;
 
-
-app.use(bodyParser.json());
+// ---------- Middleware ----------
+app.use(cors());
+app.use(express.json());
 app.use(express.static(path.join(__dirname, '/')));
-app.use(cors())
 
-async function connectDB() {
-    try { 
-        await mongoose.connect(process.env.MONGO_URI, {
-        user: process.env.MONGO_USERNAME,
-        pass: process.env.MONGO_PASSWORD,
-        });
-        console.log('MongoDB Connection Successful');
-    } catch (err) {
-        console.error('Connection failed', err);
-        process.exit(1);
-    }
+// ---------- DB ----------
+const MONGO_URI = process.env.MONGO_URI;
+
+if (!MONGO_URI) {
+  console.error('❌ MONGO_URI is not defined. Check your .env file.');
+  process.exit(1);
 }
-connectDB();
-// mongoose.connect(process.env.MONGO_URI, {
-//     user: process.env.MONGO_USERNAME,
-//     pass: process.env.MONGO_PASSWORD,
-//     useNewUrlParser: true,
-//     useUnifiedTopology: true
-// }, function(err) {
-//     if (err) {
-//         console.log("error!! " + err)
-//     } else {
-//       //  console.log("MongoDB Connection Successful")
-//     }
-// })
 
-var Schema = mongoose.Schema;
-
-var dataSchema = new Schema({
-    name: String,
-    id: Number,
-    description: String,
-    image: String,
-    velocity: String,
-    distance: String
-});
-var planetModel = mongoose.model('planets', dataSchema);
-
-
-
-app.post('/planet', async function(req, res) {
-    try {
-        const planetData = await planetModel.findOne({ id: req.body.id });
-        if (!planetData) {
-            return res.status(404).send("Error in Planet Data");
-        }
-        res.send(planetData);
-    } catch (err) {
-        res.status(500).send("Error in Planet Data");
-    }
-});
-
-app.get('/',   async (req, res) => {
-    res.sendFile(path.join(__dirname, '/', 'index.html'));
-});
-
-app.get('/api-docs', (req, res) => {
-    fs.readFile('oas.json', 'utf8', (err, data) => {
-      if (err) {
-        console.error('Error reading file:', err);
-        res.status(500).send('Error reading file');
-      } else {
-        res.json(JSON.parse(data));
-      }
-    });
+try {
+  await mongoose.connect(MONGO_URI, {
+    user: process.env.MONGO_USERNAME,
+    pass: process.env.MONGO_PASSWORD,
+    serverSelectionTimeoutMS: 5000,
   });
-  
-app.get('/os',   function(req, res) {
-    res.setHeader('Content-Type', 'application/json');
-    res.send({
-        "os": OS.hostname(),
-        "env": process.env.NODE_ENV
-    });
-})
+  console.log('✅ MongoDB Connection Successful');
+} catch (err) {
+  console.error('❌ MongoDB connection failed:', err.message);
+  process.exit(1);
+}
 
-app.get('/live',   function(req, res) {
-    res.setHeader('Content-Type', 'application/json');
-    res.send({
-        "status": "live"
-    });
-})
+// ---------- Schema ----------
+const dataSchema = new mongoose.Schema(
+  {
+    name:        String,
+    id:          Number,
+    description: String,
+    image:       String,
+    velocity:    String,
+    distance:    String,
+  },
+  { collection: 'planets' }
+);
 
-app.get('/ready',   function(req, res) {
-    res.setHeader('Content-Type', 'application/json');
-    res.send({
-        "status": "ready"
-    });
-})
+const Planet = mongoose.model('Planet', dataSchema);
 
-app.listen(3000, () => { console.log("Server successfully running on port - " +3000); })
-module.exports = app;
+// ---------- Routes ----------
+app.post('/planet', async (req, res) => {
+  try {
+    const planet = await Planet.findOne({ id: req.body.id }).lean();
+    if (!planet) return res.status(404).json({ error: 'Planet not found' });
+    res.json(planet);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error fetching planet data' });
+  }
+});
 
-//module.exports.handler = serverless(app)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/api-docs', async (req, res) => {
+  try {
+    const raw = await fs.readFile(path.join(__dirname, 'oas.json'), 'utf8');
+    res.json(JSON.parse(raw));
+  } catch (err) {
+    console.error('Error reading oas.json:', err);
+    res.status(500).json({ error: 'Error reading API docs' });
+  }
+});
+
+app.get('/os', (req, res) => {
+  res.json({ os: os.hostname(), env: process.env.NODE_ENV ?? 'development' });
+});
+
+app.get('/live',  (_req, res) => res.json({ status: 'live' }));
+app.get('/ready', (_req, res) => res.json({ status: 'ready' }));
+
+// ---------- Start ----------
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
+
+export default app;
