@@ -14,11 +14,11 @@ pipeline {
   }
 
   stages {
-    stage('Installing Dependencies') {
-      steps {
-        sh 'npm install --no-audit'
-      }
-    }
+    // stage('Installing Dependencies') {
+    //   steps {
+    //     sh 'npm install --no-audit'
+    //   }
+    // }
 
     // stage('Dependency Scanning') {
     //   parallel {
@@ -62,17 +62,19 @@ pipeline {
     //         }
     //     }
     // }
-    stage('Code Coverage') {
-      steps {
-        sh 'echo Colon-Separated - $MONGO_DB_CREDS'
-        sh 'echo Username - $MONGO_DB_CREDS_USERNAME'
-        sh 'echo Password - $MONGO_DB_CREDS_PASSWORD'
 
-        catchError(buildResult: 'SUCCESS', message: 'Oops! It will be fixed in future release', stageResult: 'UNSTABLE') {
-          sh 'npm run coverage'
-        }
-      }
-    }
+    // stage('Code Coverage') {
+    //   steps {
+    //     sh 'echo Colon-Separated - $MONGO_DB_CREDS'
+    //     sh 'echo Username - $MONGO_DB_CREDS_USERNAME'
+    //     sh 'echo Password - $MONGO_DB_CREDS_PASSWORD'
+
+    //     catchError(buildResult: 'SUCCESS', message: 'Oops! It will be fixed in future release', stageResult: 'UNSTABLE') {
+    //       sh 'npm run coverage'
+    //     }
+    //   }
+    // }
+    
     // stage('SonarQube Scanning') {
     //   steps {
     //     timeout(time: 15, unit: 'MINUTES') {
@@ -151,19 +153,27 @@ pipeline {
         script {
           sshagent(['my-key']) {
             sh '''
-              ssh -T -o StrictHostKeyChecking=no -p 2200 root@192.168.68.59 << EOF
+              cat > /tmp/deploy.sh <<'REMOTE_SCRIPT'
+              set -e
               if docker ps -a --format '{{.Names}}' | grep -qx solar-system; then
                 echo "Container found. Stopping..."
                 docker stop solar-system && docker rm solar-system
-                echo "Container stopped and removed"
               fi
-
-              docker run -d --name solar-system -p 3000:3000 \\
-                -e MONGO_URI="$MONGO_URI" \\
-                -e MONGO_USERNAME="$MONGO_USERNAME" \\
-                -e MONGO_PASSWORD="$MONGO_PASSWORD" \\
-                islandertron1016/solar-system:$GIT_COMMIT
-              EOF
+              docker run -d --name solar-system -p 3000:3000 \
+                -e MONGO_URI="$MONGO_URI" \
+                -e MONGO_USERNAME="$MONGO_USERNAME" \
+                -e MONGO_PASSWORD="$MONGO_PASSWORD" \
+                islandertron1016/solar-system:"$GIT_COMMIT"
+              REMOTE_SCRIPT
+              
+              ssh -T -o StrictHostKeyChecking=no -p 2200 root@192.168.68.59 \
+                MONGO_URI="$MONGO_URI" \
+                MONGO_USERNAME="$MONGO_DB_CREDS_USR" \
+                MONGO_PASSWORD="$MONGO_DB_CREDS_PSW" \
+                GIT_COMMIT="$GIT_COMMIT" \
+                'bash -s' < /tmp/deploy.sh
+              
+              rm -f /tmp/deploy.sh
             '''
           }
         }
