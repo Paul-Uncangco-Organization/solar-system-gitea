@@ -156,7 +156,10 @@ pipeline {
           ]) {
             sh '''
               
-              ssh -T -o StrictHostKeyChecking=accept-new -p 22 paul@192.168.68.59 <<EOF
+              ssh -T -i "$SSH_KEY" \
+                  -o IdentitiesOnly=yes -o BatchMode=yes \
+                  -o StrictHostKeyChecking=accept-new -p 22 \
+                  paul@192.168.68.59 <<EOF
 if docker ps -a --format '{{.Names}}' | grep -qx solar-system; then
   echo "Container found. Stopping..."
   docker stop solar-system && docker rm solar-system
