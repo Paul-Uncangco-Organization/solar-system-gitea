@@ -154,22 +154,21 @@ pipeline {
           withCredentials([
             sshUserPrivateKey(credentialsId: 'sonarqube_server', keyFileVariable: 'SSH_KEY')
           ]) {
-
             sh '''
               
-              ssh -T -o StrictHostKeyChecking=accept-new -p 22 paul@192.168.68.59 <<-EOF
-              if docker ps -a --format '{{.Names}}' | grep -qx solar-system; then
-                echo "Container found. Stopping..."
-                docker stop solar-system && docker rm solar-system
-                echo "Container stopped and removed"
-              fi
+              ssh -T -o StrictHostKeyChecking=accept-new -p 22 paul@192.168.68.59 <<EOF
+if docker ps -a --format '{{.Names}}' | grep -qx solar-system; then
+  echo "Container found. Stopping..."
+  docker stop solar-system && docker rm solar-system
+  echo "Container stopped and removed"
+fi
 
-              docker run -d --name solar-system -p 3000:3000 \
-                -e MONGO_URI="$MONGO_URI" \
-                -e MONGO_USERNAME="$MONGO_USERNAME" \
-                -e MONGO_PASSWORD="$MONGO_PASSWORD" \
-                islandertron1016/solar-system:$GIT_COMMIT
-              EOF
+docker run -d --name solar-system -p 3000:3000 \
+  -e MONGO_URI="$MONGO_URI" \
+  -e MONGO_USERNAME="$MONGO_USERNAME" \
+  -e MONGO_PASSWORD="$MONGO_PASSWORD" \
+  islandertron1016/solar-system:$GIT_COMMIT
+EOF
             '''
           }
         }
