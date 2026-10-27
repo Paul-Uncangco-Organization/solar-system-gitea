@@ -166,7 +166,7 @@ pipeline {
                 islandertron1016/solar-system:"$GIT_COMMIT"
               REMOTE_SCRIPT
               
-              ssh -T -o StrictHostKeyChecking=no -p 2200 root@192.168.68.59 \
+              ssh -T -o StrictHostKeyChecking=no -p 2200 paul@192.168.68.59 \
                 MONGO_URI="$MONGO_URI" \
                 MONGO_USERNAME="$MONGO_DB_CREDS_USR" \
                 MONGO_PASSWORD="$MONGO_DB_CREDS_PSW" \
