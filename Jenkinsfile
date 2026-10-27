@@ -153,7 +153,8 @@ pipeline {
         script {
           sshagent(['my-key']) {
             sh '''
-              ssh -T sonarqube_server
+              
+              ssh -T sonarqube_server <<-EOF
               if docker ps -a --format '{{.Names}}' | grep -qx solar-system; then
                 echo "Container found. Stopping..."
                 docker stop solar-system && docker rm solar-system
@@ -165,6 +166,7 @@ pipeline {
                 -e MONGO_USERNAME="$MONGO_USERNAME" \
                 -e MONGO_PASSWORD="$MONGO_PASSWORD" \
                 islandertron1016/solar-system:$GIT_COMMIT
+              EOF
             '''
           }
         }
