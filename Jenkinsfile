@@ -153,27 +153,18 @@ pipeline {
         script {
           sshagent(['my-key']) {
             sh '''
-              cat > /tmp/deploy.sh <<'REMOTE_SCRIPT'
-              set -e
+              ssh -T sonarqube_server
               if docker ps -a --format '{{.Names}}' | grep -qx solar-system; then
                 echo "Container found. Stopping..."
                 docker stop solar-system && docker rm solar-system
+                echo "Container stopped and removed"
               fi
+
               docker run -d --name solar-system -p 3000:3000 \
                 -e MONGO_URI="$MONGO_URI" \
                 -e MONGO_USERNAME="$MONGO_USERNAME" \
                 -e MONGO_PASSWORD="$MONGO_PASSWORD" \
-                islandertron1016/solar-system:"$GIT_COMMIT"
-              REMOTE_SCRIPT
-              
-              ssh -T -o StrictHostKeyChecking=no -p 2200 paul@192.168.68.59 \
-                MONGO_URI="$MONGO_URI" \
-                MONGO_USERNAME="$MONGO_DB_CREDS_USR" \
-                MONGO_PASSWORD="$MONGO_DB_CREDS_PSW" \
-                GIT_COMMIT="$GIT_COMMIT" \
-                'bash -s' < /tmp/deploy.sh
-              
-              rm -f /tmp/deploy.sh
+                islandertron1016/solar-system:$GIT_COMMIT
             '''
           }
         }
